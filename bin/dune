@@ -1,0 +1,9 @@
+(executable
+ (public_name relmach)
+ (name main)
+ (libraries relmach))
+
+(env
+ (dev
+  (flags
+   (:standard -warn-error -A))))
