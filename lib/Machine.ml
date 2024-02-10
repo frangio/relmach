@@ -50,8 +50,7 @@ let run (p : pool) : result Seq.t =
           | Sym _ ->
               begin match Unifier.find u.unifier lv with
               | Sym _ as x ->
-                  let skq = PQueue.(snoc (SLeftOf (App, r)) empty) in
-                  enqueue (Return (Result (x, skq), k, u))
+                  enqueue (Return (stuck x (SLeftOf (App, r)), k, u))
               | l' ->
                   apply k op (value l') r u
               end
@@ -61,8 +60,7 @@ let run (p : pool) : result Seq.t =
               enqueue (Eval (body, rv :: e, k, u))
           | Clos (_, _, bodies, e) ->
               let app body =
-                let u' = Universe.branch u in
-                enqueue (Eval (body, rv :: e, k, u'))
+                enqueue (Eval (body, rv :: e, k, Universe.branch u))
               in
               List.iter app bodies
           end

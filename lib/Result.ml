@@ -2,6 +2,8 @@ open Types
 
 let value v = Result (v, PQueue.empty)
 
+let stuck v sk = Result (v, PQueue.(snoc sk empty))
+
 let is_stuck (Result (_, skq)) = not (PQueue.is_empty skq)
 
 let rec map_result f (Result (v, skq)) =
