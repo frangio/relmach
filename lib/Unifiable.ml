@@ -9,6 +9,7 @@ module Make (P : Params) = struct
     | Sym of int * string
     | Struct of int * string * unifiable list
     | Clos of int * string * P.clos_body * unifiable_env
+
   and unifiable_env = unifiable list
 
   module Unifiable = struct

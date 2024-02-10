@@ -6,6 +6,7 @@ type term =
   | Bin of binop * term * term
   | Lam of string * lam_body
   | Nu of string * term
+
 and lam_body = term list
 
 include Unifiable.Make(struct type clos_body = lam_body end)
