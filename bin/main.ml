@@ -11,10 +11,10 @@ let prog =
       Bin (Unif, Var 0, Const "c"),
       Bin (App,
         Lam ("y", [
-          Bin (App, Var 0, Const "d");
-          Bin (App, Var 0, Const "e")
+          Bin (App, Var 1, Const "d");
+          Bin (App, Var 1, Const "e")
         ]),
-        Var 0)))
+        Const "f")))
 
 let () =
   print_term prog;
