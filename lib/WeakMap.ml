@@ -79,7 +79,7 @@ module Make (H : Hashtbl.HashedType) = struct
             let i = 
               match Array.find_index (Ephemeron.has k) b with
               | Some _ as i -> i
-              | None -> Array.find_index Ephemeron.empty b
+              | None -> Array.find_index Ephemeron.is_empty b
             in
             match i with
             | Some i -> Leaf (u, PArray.set b i e), 0
@@ -144,7 +144,7 @@ module Make (H : Hashtbl.HashedType) = struct
           if i < n0 && i < n1 then
             let e0 = Array.get b0 i in
             let e1 = Array.get b1 i in
-            match Ephemeron.(empty e0, empty e1) with
+            match Ephemeron.(is_empty e0, is_empty e1) with
             | true, true -> Either
             | false, true -> Left e0
             | true, false -> Right e1
@@ -157,10 +157,10 @@ module Make (H : Hashtbl.HashedType) = struct
                   | _ -> Other [e0; e1]
           else if i < n0 then
             let e0 = Array.get b0 i in
-            if Ephemeron.empty e0 then Either else Left e0
+            if Ephemeron.is_empty e0 then Either else Left e0
           else if i < n1 then
             let e1 = Array.get b1 i in
-            if Ephemeron.empty e1 then Either else Right e1
+            if Ephemeron.is_empty e1 then Either else Right e1
           else
             Either
         in

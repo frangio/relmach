@@ -53,8 +53,4 @@ let has key eph =
   | Some k -> k == key
   | None -> false
 
-let empty eph = not (check_key eph)
-
-let overwrite key data eph =
-  set_data eph data;
-  set_key eph key
+let is_empty eph = not (check_key eph)

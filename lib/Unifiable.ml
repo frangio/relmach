@@ -78,7 +78,7 @@ module Make (P : Params) = struct
         match v, w with
         | Sym _, _ | _, Sym _ -> unify_sym v w u
         | Clos _, Clos _ -> if v == w then Some u else None
-        | Struct (_, c, vs), Struct (_, c', vs') -> if c == c' then unify_list vs vs' u else None
+        | Struct (_, c, vs), Struct (_, d, ws) -> if c == d then unify_list vs ws u else None
         | _, _ -> None
 
       and unify_list vs ws u =
@@ -117,7 +117,7 @@ module Make (P : Params) = struct
               else
                 Some (M.set x { nx with parent = v } u)
           | _ ->
-              unify v w u
+              unify nv.parent nw.parent u
 
       in unify v w u
 

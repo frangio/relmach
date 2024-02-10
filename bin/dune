@@ -1,7 +1,7 @@
 (executable
- (public_name relmach)
- (name main)
- (libraries relmach))
+  (public_name relmach)
+  (name main)
+  (libraries relmach))
 
 (env
  (dev

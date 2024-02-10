@@ -9,6 +9,8 @@ module Make (P : Params) : sig
     | Clos of int * string * P.clos_body * unifiable_env
   and unifiable_env = unifiable list
 
+  module Unifiable : Hashtbl.HashedType with type t = unifiable
+
   val make_symbol : string -> unifiable
   val make_closure : string -> P.clos_body -> unifiable_env -> unifiable
   val make_struct : string -> unifiable

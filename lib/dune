@@ -1,6 +1,5 @@
 (library
- (name relmach)
- (inline_tests)
- (libraries hashcons)
- (preprocess
-   (pps ppx_inline_test)))
+  (name relmach)
+  (inline_tests)
+  (preprocess
+    (pps ppx_inline_test)))
