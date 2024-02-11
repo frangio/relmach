@@ -1,3 +1,4 @@
+(* todo: rename to guard *)
 type binop = App | Seq | Unif
 
 type term =
