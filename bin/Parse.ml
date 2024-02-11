@@ -39,8 +39,8 @@ let token_keyword =
   Keyword kw
 
 let token_ident =
-  let* a = take_while1 is_lower
-  and+ b = take_while is_alphanum
+  let* a = take_while1 (fun c -> is_lower c || c = '_')
+  and+ b = take_while (fun c -> is_alphanum c || c = '_')
   in
   let s = a ^ b in
   if List.mem s keywords then
