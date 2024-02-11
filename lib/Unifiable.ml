@@ -58,11 +58,11 @@ module Make (P : Params) = struct
       | Some { parent; _ } -> parent
 
     let rec subst u v =
-      match v with
-      | Sym _ -> find u v
+      match find u v with
+      | Sym _ as x -> x
       | Struct (_, c, vs) ->
           let s = make_struct c in
-          List.fold_left cons_struct s (List.map (subst u) vs)
+          List.fold_left cons_struct s (List.rev_map (subst u) vs)
       | Clos (h, x, t, e) ->
           Clos (h, x, t, List.map (subst u) e)
 
