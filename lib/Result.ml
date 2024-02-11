@@ -27,7 +27,7 @@ let decode r =
   let rec decode_value symbols v =
     match v with
     | Sym _ -> Var (symbol_idx symbols v)
-    | Struct (_, c, vs) -> List.fold_left (fun l r -> Bin (App, l, decode_value symbols r)) (Const c) vs
+    | Struct (_, c, vs) -> List.fold_right (fun r l -> Bin (App, l, decode_value symbols r)) vs (Const c)
     | Clos (_, x, t, e) -> Lam (x, List.map (decode_term ~free:1 symbols e) t)
 
   and decode_term ?(free = 0) symbols e t =
