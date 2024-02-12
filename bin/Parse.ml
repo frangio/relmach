@@ -130,15 +130,19 @@ let expr = fix @@ fun expr ->
         ts
   in
 
-  let expr_unif =
-    let+ t = expr_app
-    and+ _ = symbol "~"
-    and+ u = expr_app
-    in fun env -> Term.Bin (Unif, t env, u env)
+  let expr_app_or_unif =
+    let* t = expr_app
+    and+ s = option "" (symbol "~")
+    in
+    if s = "~" then
+      let+ u = expr_app in
+      fun env -> Term.Bin (Unif, t env, u env)
+    else
+      return t
   in
 
   let expr_seq =
-    let+ ts = sep_by1 (symbol ";") (expr_unif <|> expr_app) in
+    let+ ts = sep_by1 (symbol ";") expr_app_or_unif in
     let t, ts = List.(hd ts, tl ts) in
     fun env ->
       List.fold_left
@@ -168,9 +172,7 @@ let expr = fix @@ fun expr ->
       xs
       t
 
-  in
-
-  let expr_let =
+  and expr_let =
     let+ _ = keyword "let"
     and+ x = ident
     and+ _ = symbol "="
@@ -179,13 +181,14 @@ let expr = fix @@ fun expr ->
     and+ t = expr
     in fun env ->
       Term.Bin (App, Term.Lam (x, [t (x :: env)]), e env)
+
   in
 
   choice [
     expr_fun;
     expr_fresh;
-    expr_seq;
     expr_let;
+    expr_seq;
   ]
 
 let let_stmt =
