@@ -28,6 +28,8 @@ let is_digit = function
 
 let is_alphanum c = is_digit c || is_alpha c
 
+let is_ident_char c = is_alphanum c || c = '_' || c = '\''
+
 let ws = skip_while is_ws
 
 type token = Keyword of string | Ident of string | Const of string | Symbol of string
@@ -40,7 +42,7 @@ let token_keyword =
 
 let token_ident =
   let* a = take_while1 (fun c -> is_lower c || c = '_')
-  and+ b = take_while (fun c -> is_alphanum c || c = '_')
+  and+ b = take_while is_ident_char
   in
   let s = a ^ b in
   if List.mem s keywords then
@@ -50,14 +52,14 @@ let token_ident =
 
 let token_const_ident =
   let+ a = take_while1 is_upper
-  and+ b = take_while is_alphanum
+  and+ b = take_while is_ident_char
   in Const (a ^ b)
 
 let token_const_num =
   let* n = take_while1 is_digit
   and+ p = peek_char
   in match p with
-  | Some c when is_alphanum c -> fail "invalid number"
+  | Some c when is_ident_char c -> fail "invalid number"
   | _ -> return (Const n)
 
 let token_symbol =
