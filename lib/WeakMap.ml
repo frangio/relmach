@@ -117,7 +117,7 @@ module Make (H : Hashtbl.HashedType) = struct
 
   let bucket_items b len =
     let t = HT.create (2 * bucket_size) in
-    for i = 0 to len - 1 do
+    for i = 0 to min len (Array.length b) - 1 do
       let e = Array.get b i in
       match Ephemeron.get_key_opt e with
       | Some k -> HT.add t k e
