@@ -14,7 +14,7 @@ module Make (P : Params) : sig
   val make_symbol : string -> unifiable
   val make_closure : string -> P.clos_body -> unifiable_env -> unifiable
   val make_struct : string -> unifiable
-  val cons_struct : unifiable -> unifiable -> unifiable
+  val extend_struct : unifiable -> unifiable -> unifiable
 
   type unifier
 

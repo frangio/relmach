@@ -55,7 +55,7 @@ let run (p : pool) : result Seq.t =
                   apply k op (value l') r u
               end
           | Struct _ ->
-              enqueue (Return (value (cons_struct lv rv), u, k))
+              enqueue (Return (value (extend_struct lv rv), u, k))
           | Clos (_, _, [body], e) ->
               enqueue (Eval (body, rv :: e, u, k))
           | Clos (_, _, bodies, e) ->

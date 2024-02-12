@@ -30,7 +30,7 @@ module Make (P : Params) = struct
     let h = Hashtbl.hash c in
     Struct (h, c, [])
 
-  let cons_struct s v =
+  let extend_struct s v =
     match s with
     | Struct (h, c, vs) ->
         let h' = Hashtbl.hash (h, Unifiable.hash v) in
@@ -62,7 +62,7 @@ module Make (P : Params) = struct
       | Sym _ as x -> x
       | Struct (_, c, vs) ->
           let s = make_struct c in
-          List.fold_left cons_struct s (List.rev_map (subst u) vs)
+          List.fold_left extend_struct s (List.rev_map (subst u) vs)
       | Clos (h, x, t, e) ->
           Clos (h, x, t, List.map (subst u) e)
 
