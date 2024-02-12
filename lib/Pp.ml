@@ -24,7 +24,7 @@ let print_term =
     | Var i ->
         print_string (List.nth vars i)
     | Const c ->
-        Printf.printf "'%s" c
+        Printf.printf "%s" c
     | Nu _ as t ->
         print_string "ν";
         let vars, u = print_binders vars t in
