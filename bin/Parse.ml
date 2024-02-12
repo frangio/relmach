@@ -34,7 +34,7 @@ let ws = skip_while is_ws
 
 type token = Keyword of string | Ident of string | Const of string | Symbol of string
 
-let keywords = ["let"; "fun"; "fresh"]
+let keywords = ["let"; "fun"; "fresh"; "in"]
 
 let token_keyword =
   let+ kw = choice (List.map string keywords) in
@@ -161,7 +161,7 @@ let expr = fix @@ fun expr ->
   and expr_fresh =
     let+ _ = keyword "fresh"
     and+ xs = many1 ident
-    and+ _ = symbol "->"
+    and+ _ = keyword "in"
     and+ t = expr
     in List.fold_right
       (fun x t env -> Term.Nu (x, t (x :: env)))
@@ -170,10 +170,22 @@ let expr = fix @@ fun expr ->
 
   in
 
+  let expr_let =
+    let+ _ = keyword "let"
+    and+ x = ident
+    and+ _ = symbol "="
+    and+ e = expr
+    and+ _ = keyword "in"
+    and+ t = expr
+    in fun env ->
+      Term.Bin (App, Term.Lam (x, [t (x :: env)]), e env)
+  in
+
   choice [
     expr_fun;
     expr_fresh;
     expr_seq;
+    expr_let;
   ]
 
 let let_stmt =
