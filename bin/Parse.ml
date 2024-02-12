@@ -104,7 +104,10 @@ let expr = fix @@ fun expr ->
 
   and expr_var =
     let+ x = ident in
-    fun env -> Term.Var (List.find_index ((=) x) env |> Option.get)
+    fun env ->
+      match List.find_index ((=) x) env with
+      | Some i -> Term.Var i
+      | None -> failwith (Printf.sprintf "unknown variable %s" x)
 
   and expr_const =
     let+ c = const in
