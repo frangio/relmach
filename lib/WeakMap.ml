@@ -179,8 +179,9 @@ module Make (H : Hashtbl.HashedType) = struct
           | Other es' ->
               List.iter
                 (fun e ->
-                  let k = Ephemeron.get_key e in
-                  ht_replace_with es (f k) k e)
+                  match Ephemeron.get_key_opt e with
+                  | Some k -> ht_replace_with es (f k) k e
+                  | None -> ())
                 es';
               Other es
           | Either -> assert false
