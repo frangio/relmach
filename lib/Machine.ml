@@ -41,7 +41,7 @@ let run (p : pool) : result Seq.t =
               Universe.kill u
           | Some g ->
               u.unifier <- g;
-              enqueue (Return (value (make_struct "ok"), u, k))
+              enqueue (Return (value (make_struct "Ok"), u, k))
           end
       | App ->
           let Result (lv, _) = l in
