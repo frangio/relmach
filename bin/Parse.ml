@@ -179,11 +179,11 @@ let expr = fix @@ fun expr ->
     let+ _ = keyword "let"
     and+ x = ident
     and+ _ = symbol "="
-    and+ e = expr
-    and+ _ = keyword "in"
     and+ t = expr
+    and+ _ = keyword "in"
+    and+ u = expr
     in fun env ->
-      Term.Bin (App, Term.Lam (x, [t (x :: env)]), e env)
+      Term.Bin (App, Term.Lam (x, [u (x :: env)]), t env)
 
   in
 
