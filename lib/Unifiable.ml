@@ -37,6 +37,12 @@ module Make (P : Params) = struct
         Struct (h', c, v :: vs)
     | _ -> raise (Invalid_argument "not a struct")
 
+  let map_struct f c vs =
+    List.fold_left
+      (fun s v -> extend_struct s (f v))
+      (make_struct c)
+      (List.rev vs)
+
   type unifier = (unifiable, node) WeakMap._t
   and node = { rank : int; parent : unifiable }
 
@@ -60,11 +66,8 @@ module Make (P : Params) = struct
     let rec subst u v =
       match find u v with
       | Sym _ as x -> x
-      | Struct (_, c, vs) ->
-          let s = make_struct c in
-          List.fold_left extend_struct s (List.rev_map (subst u) vs)
-      | Clos (h, x, t, e) ->
-          Clos (h, x, t, List.map (subst u) e)
+      | Struct (_, c, vs) -> map_struct (subst u) c vs
+      | Clos (_, x, t, e) -> make_closure x t (List.map (subst u) e)
 
     let occurs u x v =
       let x = find u x in
