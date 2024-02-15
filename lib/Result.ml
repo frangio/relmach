@@ -33,7 +33,7 @@ let decode r =
   and decode_term ?(free = 0) symbols e t =
     match t with
     | Const c -> Const c
-    | Var i -> if i >= free then decode_value symbols (List.nth e (i - free)) else Var i
+    | Var i -> if i < free then Var i else decode_value symbols (List.nth e (i - free))
     | Bin (op, t, u) -> Bin (op, decode_term ~free symbols e t, decode_term ~free symbols e u)
     | Lam (x, t) -> Lam (x, List.map (decode_term ~free:(free + 1) symbols e) t)
     | Nu (x, t) -> Nu (x, decode_term ~free:(free + 1) symbols e t)
