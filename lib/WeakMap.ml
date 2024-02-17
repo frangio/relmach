@@ -21,6 +21,29 @@ type ('k, 'a) _t =
   | Leaf of int * ('k, 'a) _bucket
   | Node of int * ('k, 'a) _t array
 
+let print_weakmap =
+  let rec print_weakmap pp_kv ~prefix = function
+    | Leaf (u, b) ->
+        Printf.printf "%s[" prefix;
+        Array.iteri
+          (fun i e ->
+            if i > 0 then Printf.printf "; ";
+            match Ephemeron.(get_key e, get_data e) with
+            | exception _ -> Printf.printf "(-)"
+            | kv -> Printf.printf "%a" pp_kv kv)
+          b;
+        Printf.printf "] (u=%d)\n" u
+    | Node (h, cs) ->
+        Printf.printf "%s┳ (h=%d)\n" prefix h;
+        let last = Array.length cs - 1 in
+        Array.iteri
+          (fun i c ->
+            let prefix = prefix ^ if i = last then "┗ " else "┣ " in
+            print_weakmap pp_kv ~prefix c)
+          cs
+  in
+  print_weakmap ~prefix:""
+
 module Make (H : Hashtbl.HashedType) = struct
   module HT = Hashtbl.Make(H)
 
@@ -88,9 +111,10 @@ module Make (H : Hashtbl.HashedType) = struct
                 if s < bucket_size then
                   Leaf (u, PArray.push b e), 0
                 else
-                  let root_height, root_size = dimensions root in
-                  let size = root_size * (1 lsl (width_bits * root_height)) in
-                  let z kh = (kh / u) mod (1 lsl (size / u)) in
+                  let curr_size = size root in
+                  let resize = u = curr_size in
+                  let size = if resize then curr_size * 2 else curr_size in
+                  let z kh = (kh mod size) / u in
                   let zk = z kh in
                   let b' =
                     Array.fold_left
@@ -101,10 +125,8 @@ module Make (H : Hashtbl.HashedType) = struct
                       [e] b
                   in
                   let b' = Array.of_list b' in
-                  if u < size then
-                    Leaf (size, b'), 0
-                  else
-                    Leaf (size * 2, b'), 1 + zk
+                  let r = if resize then 1 + zk else 0 in
+                  Leaf (size, b'), r
           end
     in
     let t', r = set' t in
@@ -279,3 +301,22 @@ let%test_unit _ =
   assert (W.get b t = Some c);
   assert (W.get c t = Some d);
   assert (W.get d t = Some e)
+
+let%test_unit _ =
+  let module W = Make(String) in
+  let module H = Hashtbl.Make(String) in
+  let arb = QCheck.(list (pair small_string int)) in
+  let prop ps =
+    let h = H.of_seq (List.to_seq ps) in
+    let m = H.fold W.set h W.empty in
+    H.iter (fun k v ->
+      match W.get k m with
+      | None ->
+          failwith (Printf.sprintf "key %s not found" k)
+      | Some wv when wv <> v ->
+          failwith (Printf.sprintf "key %s got %d expected %d" k wv v)
+      | _ -> ()
+    ) h;
+    true
+  in
+  QCheck.Test.(check_exn (make arb prop))

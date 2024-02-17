@@ -1,5 +1,7 @@
 type ('k, 'a) _t
 
+val print_weakmap : (out_channel -> 'k * 'a -> unit) -> ('k, 'a) _t -> unit
+
 module Make (H : Hashtbl.HashedType) : sig
   type key = H.t
   type 'a t = (key, 'a) _t
