@@ -319,3 +319,25 @@ let%test_unit _ =
     true
   in
   QCheck.Test.(check_exn (make arb prop))
+
+let%test_unit _ =
+  let module W = Make(String) in
+  let module H = Hashtbl.Make(String) in
+  let arb = QCheck.(let l = list (pair small_string int) in pair l l) in
+  let prop (ps0, ps1) =
+    let h0 = H.of_seq (List.to_seq ps0) in
+    let h1 = H.of_seq (List.to_seq ps1 |> Seq.filter (fun (k, _) -> not (H.mem h0 k))) in
+    let m0 = H.fold W.set h0 W.empty in
+    let m1 = H.fold W.set h1 W.empty in
+    let m = W.merge m0 m1 in
+    H.to_seq h0 |> Seq.append (H.to_seq h1) |> Seq.iter (fun (k, v) ->
+      match W.get k m with
+      | None ->
+          failwith (Printf.sprintf "key %s not found" k)
+      | Some wv when wv <> v ->
+          failwith (Printf.sprintf "key %s got %d expected %d" k wv v)
+      | _ -> ()
+    );
+    true
+  in
+  QCheck.Test.(check_exn (make ~count:10000 arb prop))
