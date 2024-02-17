@@ -43,12 +43,12 @@ module Make (P : Params) = struct
       (make_struct c)
       (List.rev vs)
 
-  type unifier = (unifiable, node) WeakMap._t
+  module M = WeakMap.Make(Unifiable)
+
+  type unifier = node M.t
   and node = { rank : int; parent : unifiable }
 
   module Unifier = struct
-    module M = WeakMap.Make(Unifiable)
-
     type t = unifier
 
     let empty = M.empty

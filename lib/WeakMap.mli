@@ -1,10 +1,6 @@
-type ('k, 'a) _t
-
-val print_weakmap : (out_channel -> 'k * 'a -> unit) -> ('k, 'a) _t -> unit
-
 module Make (H : Hashtbl.HashedType) : sig
   type key = H.t
-  type 'a t = (key, 'a) _t
+  type 'a t
 
   val empty : 'a t
   val size : 'a t -> int
@@ -14,4 +10,6 @@ module Make (H : Hashtbl.HashedType) : sig
 
   val merge : 'a t -> 'a t -> 'a t
   val merge_with : ('a -> 'a -> 'a) -> 'a t -> 'a t -> 'a t
+
+  val print_weakmap : (out_channel -> key * 'a -> unit) -> 'a t -> unit
 end

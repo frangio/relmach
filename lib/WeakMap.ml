@@ -16,34 +16,6 @@ module PArray = struct
     a'
 end
 
-type ('k, 'a) _bucket = ('k, 'a) Ephemeron.t array
-type ('k, 'a) _t =
-  | Leaf of int * ('k, 'a) _bucket
-  | Node of int * ('k, 'a) _t array
-
-let print_weakmap =
-  let rec print_weakmap pp_kv ~prefix = function
-    | Leaf (u, b) ->
-        Printf.printf "%s[" prefix;
-        Array.iteri
-          (fun i e ->
-            if i > 0 then Printf.printf "; ";
-            match Ephemeron.(get_key e, get_data e) with
-            | exception _ -> Printf.printf "(-)"
-            | kv -> Printf.printf "%a" pp_kv kv)
-          b;
-        Printf.printf "] (u=%d)\n" u
-    | Node (h, cs) ->
-        Printf.printf "%s┳ (h=%d)\n" prefix h;
-        let last = Array.length cs - 1 in
-        Array.iteri
-          (fun i c ->
-            let prefix = prefix ^ if i = last then "┗ " else "┣ " in
-            print_weakmap pp_kv ~prefix c)
-          cs
-  in
-  print_weakmap ~prefix:""
-
 module Make (H : Hashtbl.HashedType) = struct
   module HT = Hashtbl.Make(H)
 
@@ -52,7 +24,11 @@ module Make (H : Hashtbl.HashedType) = struct
     HT.replace t k v'
 
   type key = H.t
-  type 'a t = (key, 'a) _t
+
+  type 'a bucket = (key, 'a) Ephemeron.t array
+  type 'a t =
+    | Leaf of int * 'a bucket
+    | Node of int * 'a t array
 
   let empty = Leaf (1, [||])
 
@@ -275,6 +251,29 @@ module Make (H : Hashtbl.HashedType) = struct
     | Either -> t0
 
   let merge t0 t1 = merge_with (fun _ _ -> failwith "duplicate keys") t0 t1
+
+  let print_weakmap =
+    let rec print_weakmap pp_kv ~prefix = function
+      | Leaf (u, b) ->
+          Printf.printf "%s[" prefix;
+          Array.iteri
+            (fun i e ->
+              if i > 0 then Printf.printf "; ";
+              match Ephemeron.(get_key e, get_data e) with
+              | exception _ -> Printf.printf "(-)"
+              | kv -> Printf.printf "%a" pp_kv kv)
+            b;
+          Printf.printf "] (u=%d)\n" u
+      | Node (h, cs) ->
+          Printf.printf "%s┳ (h=%d)\n" prefix h;
+          let last = Array.length cs - 1 in
+          Array.iteri
+            (fun i c ->
+              let prefix = prefix ^ if i = last then "┗ " else "┣ " in
+              print_weakmap pp_kv ~prefix c)
+            cs
+    in
+    print_weakmap ~prefix:""
 end
 
 let%test_unit _ =
