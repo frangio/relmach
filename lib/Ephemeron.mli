@@ -1,5 +1,6 @@
 type ('k, 'd) t
 exception Empty
+val create : unit -> ('k, 'd) t
 val make : 'k -> 'd -> ('k, 'd) t
 val is_empty : ('k, 'd) t -> bool
 val get_key_opt : ('k, 'd) t -> 'k option

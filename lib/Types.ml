@@ -15,7 +15,6 @@ include Unifiable.Make(struct type clos_body = lam_body end)
 type universe = {
   family : UniverseFamily.t;
   mutable unifier : unifier;
-  last_merged : unifier Weak.t;
 }
 
 type value = unifiable
