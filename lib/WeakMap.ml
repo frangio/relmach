@@ -23,6 +23,16 @@ module Make (H : Hashtbl.HashedType) = struct
     let v' = HT.find_opt t k |> Option.fold ~none:v ~some:(f v) in
     HT.replace t k v'
 
+  let eph_query k e =
+    match Ephemeron.get_key e with
+    | k' when H.equal k k' -> Ephemeron.get_data_opt e
+    | _ | exception Ephemeron.Empty -> None
+
+  let eph_has k e =
+    match Ephemeron.get_key e with
+    | k' when H.equal k k' -> true
+    | _ | exception Ephemeron.Empty -> false
+
   type key = H.t
 
   type 'a bucket = (key, 'a) Ephemeron.t array
@@ -44,7 +54,7 @@ module Make (H : Hashtbl.HashedType) = struct
     let kh = H.hash k in
     let rec get' t =
       match t with
-      | Leaf (_, b) -> Array.find_map (Ephemeron.query k) b
+      | Leaf (_, b) -> Array.find_map (eph_query k) b
       | Node (h, c) ->
           let i = (kh lsr (h * width_bits)) mod Array.length c in
           get' (Array.get c i)
@@ -76,7 +86,7 @@ module Make (H : Hashtbl.HashedType) = struct
       | Leaf (u, b) ->
           begin
             let i = 
-              match Array.find_index (Ephemeron.has k) b with
+              match Array.find_index (eph_has k) b with
               | Some _ as i -> i
               | None -> Array.find_index Ephemeron.is_empty b
             in
@@ -151,7 +161,7 @@ module Make (H : Hashtbl.HashedType) = struct
                   Either
                 else
                   match Ephemeron.(get_key e0, get_key e1) with
-                  | k0, k1 when k0 == k1 -> Other [f k0 e0 e1]
+                  | k0, k1 when H.equal k0 k1 -> Other [f k0 e0 e1]
                   | _ -> Other [e0; e1]
           else if i < n0 then
             let e0 = Array.get b0 i in

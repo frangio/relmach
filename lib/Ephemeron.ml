@@ -43,14 +43,4 @@ let make key data =
   set_key eph key;
   eph
 
-let query key eph =
-  match get_key_opt eph with
-  | Some k when k == key -> get_data_opt eph
-  | Some _ | None -> None
-
-let has key eph =
-  match get_key_opt eph with
-  | Some k -> k == key
-  | None -> false
-
 let is_empty eph = not (check_key eph)
