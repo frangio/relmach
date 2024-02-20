@@ -1,4 +1,4 @@
-open Types
+open Relmach.Types
 
 let print_term =
   let print_op = function
