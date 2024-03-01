@@ -109,6 +109,7 @@ let run (p : pool) : result Seq.t =
         next ()
     | Return (l, lu, LeftOf fr) ->
         (* todo: optimization for prematurely stuck results *)
+        (* todo: old results may be in now dead universes *)
         List.iter (fun (r, ru) -> join_apply fr.k fr.op l r lu ru) fr.right;
         fr.left <- (l, lu) :: fr.left;
         next ()

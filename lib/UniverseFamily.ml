@@ -44,6 +44,8 @@ let join u0 u1 =
     let u = branch p in
     WeakVec.add u u0.children;
     WeakVec.add u u1.children;
+    if u0.dead || u1.dead then
+      u.dead <- true;
     u
   end
 
