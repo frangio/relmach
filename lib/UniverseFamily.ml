@@ -24,18 +24,18 @@ let branch parent =
   WeakVec.add u parent.children;
   u
 
-let rec find_common u0 u1 =
+let rec meet u0 u1 =
   if u0.depth > u1.depth then
-    find_common u0.parent u1
+    meet u0.parent u1
   else if u0.depth < u1.depth then
-    find_common u0 u1.parent
+    meet u0 u1.parent
   else if u0 != u1 then
-    find_common u0.parent u1.parent
+    meet u0.parent u1.parent
   else
     u0
 
 let join u0 u1 =
-  let p = find_common u0 u1 in
+  let p = meet u0 u1 in
   if p == u0 then
     u1
   else if p == u1 then
