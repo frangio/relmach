@@ -1,17 +1,20 @@
 open Types
 
-let value v = Result (v, PQueue.empty)
+let value v = Result (v, CList.empty)
 
-let stuck v sk = Result (v, PQueue.(snoc sk empty))
+let stuck v sk = Result (v, CList.(snoc sk empty))
 
-let is_stuck (Result (_, skq)) = not (PQueue.is_empty skq)
+let is_stuck (Result (_, skq)) = not (CList.is_empty skq)
 
 let rec map_result f (Result (v, skq)) =
   let map_stuck_cont = function
     | SLeftOf (op, r) -> SLeftOf (op, map_result f r)
     | SRightOf (op, r) -> SRightOf (op, map_result f r)
   in
-  Result (f v, PQueue.map map_stuck_cont skq)
+  Result (f v, CList.map map_stuck_cont skq)
+
+let extend1 (Result (v, skq)) sk = Result (v, CList.snoc sk skq)
+let extend (Result (v, skq1)) skq2 = Result (v, CList.append skq1 skq2)
 
 module H = Hashtbl.Make(Unifiable)
 
@@ -44,8 +47,8 @@ let decode r =
   let rec decode' (Result (v, kq)) =
     aux kq (decode_value symbols v)
   and aux q t =
-    match PQueue.(head q, tail q) with
-    | exception PQueue.Empty -> t
+    match CList.(head q, tail q) with
+    | exception CList.Empty -> t
     | SLeftOf (op, r), q' -> aux q' (Bin (op, t, decode' r))
     | SRightOf (op, r), q' -> aux q' (Bin (op, decode' r, t))
   in
