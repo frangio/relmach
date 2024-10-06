@@ -19,11 +19,11 @@ type universe = {
 
 type value = unifiable
 
-and result = Result of value * stuck_cont PQueue.t
+and result = Result of value * stuck_cont CList.t
 
 and stuck_cont = SLeftOf of binop * result | SRightOf of binop * result
 
-and cont = Ret | LeftOf of frame | RightOf of frame | Resume of stuck_cont PQueue.t * cont
+and cont = Ret | LeftOf of frame | RightOf of frame | Resume of stuck_cont CList.t * cont
 
 and frame = {
   k : cont;

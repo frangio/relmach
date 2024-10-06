@@ -15,24 +15,23 @@ let init (t : term) : pool =
 let run (p : pool) : result Seq.t =
   let enqueue j = Queue.add j p in
 
-  let try_unstuck k s sk u =
+  let try_unstuck k s u =
     let Result (sv, skq) = s in
     let sv = Unifier.find u.unifier sv in
-    let skq = PQueue.snoc sk skq in
     match sv with
-    | Sym _ -> enqueue (Return (Result (sv, skq), u, k))
+    | Sym _ -> enqueue (Return (s, u, k))
     | _ -> enqueue (Return (value sv, u, Resume (skq, k)))
   in
 
   let rec apply k op l r u =
     if is_stuck l then
-      try_unstuck k l (SLeftOf (op, r)) u
+      try_unstuck k (extend1 l (SLeftOf (op, r))) u
     else
       match op with
       | Seq ->
           enqueue (Return (r, u, k))
       | Unif | App when is_stuck r ->
-          try_unstuck k r (SRightOf (op, l)) u
+          try_unstuck k (extend1 r (SRightOf (op, l))) u
       | Unif ->
           let Result (lv, _) = l in
           let Result (rv, _) = r in
@@ -97,14 +96,17 @@ let run (p : pool) : result Seq.t =
         let v = List.nth e i in
         enqueue (Return (value v, u, k));
         next ()
+    | Return (r, u, Resume (skq, k)) when is_stuck r ->
+        try_unstuck k (extend r skq) u;
+        next ()
     | Return (r, u, Resume (skq, k)) ->
-        begin match r, PQueue.head skq, PQueue.tail skq with
-        | exception PQueue.Empty ->
+        begin match r, CList.head skq, CList.tail skq with
+        | exception CList.Empty ->
             enqueue (Return (r, u, k))
-        | rl, SLeftOf (op, rr), skq'
-        | rr, SRightOf (op, rl), skq' ->
+        | l, SLeftOf (op, r), skq'
+        | r, SRightOf (op, l), skq' ->
             let k' = Resume (skq', k) in
-            apply k' op rl rr u
+            apply k' op l r u
         end;
         next ()
     | Return (l, lu, LeftOf fr) ->
