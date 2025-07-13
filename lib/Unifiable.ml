@@ -69,14 +69,6 @@ module Make (P : Params) = struct
       | Struct (_, c, vs) -> map_struct (subst u) c vs
       | Clos (_, x, t, e) -> make_closure x t (List.map (subst u) e)
 
-    let occurs u x v =
-      let x = find u x in
-      let rec occurs' = function
-        | Sym _ as y -> x == find u y
-        | Struct (_, _, vs) | Clos (_, _, _, vs) -> List.exists occurs' vs
-      in
-      occurs' v
-
     let unify u v w =
       let rec unify v w u =
         match v, w with
@@ -116,10 +108,26 @@ module Make (P : Params) = struct
           | ({ parent = Sym _; _ } as nx), nv | nv, ({ parent = Sym _; _ } as nx) ->
               let x = nx.parent in
               let v = nv.parent in
-              if occurs u x v then
-                None
-              else
-                Some (M.set x { nx with parent = v } u)
+              let rec autobind u = function
+                | Sym _ as y ->
+                    begin match root u y with
+                    | None -> Some (M.set y { rank = 0; parent = y } u)
+                    | Some { parent = p; _ } ->
+                        if p == x then
+                          None
+                        else if p == y then
+                          Some u
+                        else
+                          autobind u p
+                    end
+                | Struct (_, _, ws) | Clos (_, _, _, ws) ->
+                    let rec loop ws u =
+                      match ws with
+                      | [] -> Some u
+                      | w :: ws -> Option.bind (autobind u w) (loop ws)
+                    in loop ws u
+              in
+              Option.map (M.set x { nx with parent = v }) (autobind u v)
           | _ ->
               unify nv.parent nw.parent u
 
